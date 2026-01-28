@@ -31,7 +31,7 @@ enum System {
 
 model User {
   id       String @id @default(uuid())
-  username String @unique
+  email String @unique
   password String
   name     String
   role     Role   @default(STUDENT)
