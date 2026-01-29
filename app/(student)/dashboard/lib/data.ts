@@ -16,7 +16,7 @@ export async function getStudentData(){
 
         return studentProfile;
     } catch (error) {
-        console.log(error)
+        // console.log(error)
         return [];
     }
 }
