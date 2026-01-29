@@ -13,7 +13,6 @@ datasource db {
   url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
 }
-        
 
 enum Role {
   STUDENT
@@ -29,34 +28,198 @@ enum System {
   OSCE
 }
 
+enum JenisUjian {
+  UTAMA
+  REMIDIAL
+}
+
+enum TipeUjian {
+  PRAKTIKUM
+  TEORI
+}
+
+enum StatusPartisipasi {
+  BELUM_MULAI
+  BERLANGSUNG
+  SELESAI
+}
+
+enum Periode {
+  GANJIL
+  GENAP
+}
+
 model User {
-  id       String @id @default(uuid())
-  email String @unique
+  id       String    @id @default(uuid())
+  email    String    @unique
   password String
   name     String
-  role     Role   @default(STUDENT)
+  role     Role      @default(STUDENT)
   sessions Session[]
 
-  studentProfile StudentProfile?
+  studentProfile  StudentProfile?
+  lecturerProfile LecturerProfile?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 model StudentProfile {
-  id        String   @id @default(uuid())
-  user      User     @relation(fields: [userId], references: [id])
-  userId    String   @unique
-  nim       String   @unique
-  semester  Int
+  id       String @id @default(uuid())
+  user     User   @relation(fields: [userId], references: [id])
+  userId   String @unique
+  nim      String @unique
+  semester Int
+
+  partisipasiUjian PartisipasiUjian[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
+model LecturerProfile {
+  id       String  @id @default(uuid())
+  user     User    @relation(fields: [userId], references: [id])
+  userId   String  @unique
+  nik      String  @unique
+  block_id String? @unique
+  block    Block?  @relation(fields: [block_id], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model PeriodeAkademik {
+  id             String  @id @default(uuid())
+  nama_periode   Periode
+  tahun_akademik String
+  is_active      Boolean @default(false)
+
+  ujian Ujian[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Block {
+  id          String           @id @default(uuid())
+  nama_blcok  String           @unique
+  ketua_block LecturerProfile?
+  soal        Soal[]
+  ujian       Ujian[]
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+}
+
+model BidangIlmu {
+  id          String @id @default(uuid())
+  nama_bidang String @unique
+
+  soal Soal[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Soal {
+  id             String     @id @default(uuid())
+  block_id       String     @unique
+  block          Block      @relation(fields: [block_id], references: [id])
+  text_soal      String     @unique
+  image_soal     String?
+  bidang_ilmu_id String
+  bidangIlmu     BidangIlmu @relation(fields: [bidang_ilmu_id], references: [id])
+
+  pilihan_jawaban Jawaban[]
+  jawaban_benar   String
+
+  jawabanStudent JawabanStudent[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Jawaban {
+  id             String  @id @default(uuid())
+  soal_id        String  @unique
+  soal           Soal    @relation(fields: soal_id, references: [id])
+  label          String
+  text_jawaban   String?
+  gambar_jawaban String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Ujian {
+  id            String     @id @default(uuid())
+  nama_ujian    String     @unique
+  jenis_ujian   JenisUjian
+  tipe_ujian    TipeUjian
+  waktu_mulia   DateTime
+  durasi        Int // dalam menit
+  nilai_minumum Int //0-100
+  lihat_hasil   Boolean    @default(false)
+
+  block_id String
+  block    Block  @relation(fields: [block_id], references: [id])
+
+  periode_akademik_id String
+  periodeAkademik     PeriodeAkademik @relation(fields: [periode_akademik_id], references: [id])
+
+  partisipasiUjian PartisipasiUjian[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model PartisipasiUjian {
+  id         String         @id @default(uuid())
+  ujian_id   String
+  ujian      Ujian          @relation(fields: [ujian_id], references: [id])
+  student_id String
+  student    StudentProfile @relation(fields: [student_id], references: [id])
+
+  hasil          HasilUjian?
+  jawabanStudent JawabanStudent[]
+
+  status StatusPartisipasi @default(BELUM_MULAI)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model JawabanStudent {
+  id              String           @id @default(uuid())
+  partisipasi_id  String
+  partisipasi     PartisipasiUjian @relation(fields: [partisipasi_id], references: [id])
+  soal_id         String
+  soal            Soal             @relation(fields: [soal_id], references: [id])
+  pilihan_jawaban String
+  isCorrect       Boolean
+  isFlagged       Boolean          @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model HasilUjian {
+  id             String  @id @default(uuid())
+  partisipasi_id String  @unique
+  total_soal     Int
+  jumlah_benar   Int
+  nilai_akhir    Float
+  staus_lulus    Boolean
+
+  partisipasi PartisipasiUjian @relation(fields: partisipasi_id, references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
 
 model Session {
-  id       String   @id @default(uuid())
-  userId  String
+  id        String   @id @default(uuid())
+  userId    String
   expiresAt DateTime
-  user    User     @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
 }

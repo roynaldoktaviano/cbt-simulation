@@ -29,6 +29,10 @@ export async function LoginAction(
     const existingStudent = await prisma.user.findFirst({
         where:{
             email: validate.data.mail, 
+        },
+        include:{
+            studentProfile: true,
+            lecturerProfile: true,
         }
     })
 
@@ -53,7 +57,15 @@ export async function LoginAction(
         sessionCookie.value,
         sessionCookie.attributes
     )
-    return redirect('/dashboard');
+
+    switch(existingStudent.role){
+        case 'ADMIN':
+            return redirect('/admin');
+        case 'STUDENT':
+            return redirect('/dashboard');
+        default:
+           return redirect('/login');
+    }
 }
 
 export async function LogoutAction(
