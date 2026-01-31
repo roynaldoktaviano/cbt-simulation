@@ -25,12 +25,12 @@ const data = {
       items: [
         {
           title: "Daftar Ujian",
-          url: "#",
-          isActive: false,
+          url: "ujian",
+          isActive: true,
         },
         {
           title: "Daftar Blok",
-          url: "#",
+          url: "blok",
           isActive: false,
         },
       ],
@@ -41,7 +41,7 @@ const data = {
       items: [
         {
           title: "Daftar Periode",
-          url: "#",
+          url: "periode",
           isActive: false,
         },
         

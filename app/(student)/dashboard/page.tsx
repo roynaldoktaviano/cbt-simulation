@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/sidebar"
 
 import data from "./data.json"
+import { columns } from "./components/columns"
 
 export default function Page() {
   return (
@@ -19,7 +20,6 @@ export default function Page() {
         } as React.CSSProperties
       }
     >
-      {/* <AppSidebar variant="inset" /> */}
       <SidebarInset>
         <SiteHeader />
         <div className="flex flex-1 flex-col">
@@ -27,7 +27,9 @@ export default function Page() {
             <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
               <SectionCards />
           
-              <DataTable data={data} />
+              <div className="px-6">
+                <DataTable columns={columns} data={[]} />
+              </div>
             </div>
           </div>
         </div>
